@@ -1,0 +1,1665 @@
+openapi: 3.0.1
+info:
+  contact:
+    email: hello@stackhawk.com
+    name: StackHawk Public API
+    url: https://www.stackhawk.com
+  description: |2+
+
+    ![STACKHAWK](https://images.ctfassets.net/nx13ojx82pll/1zPawvEGOq9zKX8PuVw0kB/e4a31b30fdb07b7e424277d7824d2ffe/stackhawk-long.png)
+    # StackHawk API
+
+    This is the OpenAPI specification for the [StackHawk](https://www.stackhawk.com) REST API, affectionately known as _Falcon_ 🦅 #Kaakaww!
+
+    StackHawk is an application security testing tool built for developers. With powerful automation and integration capabilities, StackHawk gives engineers the ability to find and fix security vulnerabilities on every merge.
+
+    ## Getting Started
+
+    To make requests to the StackHawk API, you will first need an **API Key** from the StackHawk platform. That will be used to request an **access token**, which is used to authorize requests made to the StackHawk API.
+
+    Use of the StackHawk API will require a [StackHawk account](https://auth.stackhawk.com) and an organization with sufficient permissions.
+
+    From the StackHawk platform, under [Settings > API Keys](https://app.stackhawk.com/settings/apikeys) create a new API Key. These secrets are long-lived, so store this value in a secure fashion.
+
+    ### Authorization
+
+    Requests made to the StackHawk API server are authorized following the [OAuth2.0 protocol](https://oauth.net/2/)
+
+    To get an access token, make a request to `GET /api/v1/auth/login` and provide the user apikey through the `X-ApiKey` request header. This route will then return an access token that can authenticate further API requests.
+    This token can then be used to authenticate subsequent requests, using the `authorization: Bearer` header.
+
+    For more information, see the **Api Authentication** section.
+
+    ### Rate Limiting
+
+    Api calls are ratelimited, with at most 180 requests per minute.
+
+    ## StackHawk Api Standards
+
+    ### Client Errors
+
+    API Calls that fail due to client input will return 4xx status code.
+
+    #### `401 Unauthorized`
+    The server doesn't think you should be making this request.
+
+    This error is intentionally vague for security purposes, but any of the following could cause it:
+
+    - no authorization was provided
+    - authorization has expired
+    - authorization is insufficient for the requested resource
+
+    #### `404 Not Found`
+
+    The route or resource does not exist.
+
+    #### `400 Bad Request`
+    The server could not process this request, although it may have tried.
+    The JSON reponse body `message` will include details on what input was invalid.
+
+    ### Pagination and Sorting
+
+    Listing API routes will return resources in a paginated fashion.
+    Paginated requests follow a pattern of taking the following optional path parameters:
+
+    * `pageToken`: a string incrementing count of pages in the pagination, starting from '0'
+    * `pageSize`: the number of elements to request in the page, defaults to 10
+    * `sortField`: sorts the listed resource by an approved field, defaults to sorting by resource name
+    * `sortDir`: either 'asc' or 'desc', defaults ascending
+
+    The responseBody of these API routes will additionally include two fields:
+
+    * `nextPageToken`: a string indicating the next `pageToken` to pass in for the next page of results with this request
+    * `totalCount`: the total number of resources the query can paginate through
+
+    ## Questions? Comments? Concerns? Kaa-Kaww?
+
+    We are always making advancements and improvements to our Platform, Scanner and the StackHawk API.
+    If you encounter an issue you cannot solve with this documentation, please reach out to [support@stackhawk.com](mailto:support@stackhawk.com) with your questions, and we’ll help you troubleshoot any issues and get you soaring with StackHawk.
+
+
+  license:
+    name: private
+  termsOfService: https://www.stackhawk.com/terms-of-service/
+  title: StackHawk Public API
+  version: 0.0.1
+externalDocs:
+  description: StackHawk API Documentation
+  url: https://apidocs.stackhawk.com
+servers:
+- description: StackHawk REST API
+  url: https://api.stackhawk.com
+tags:
+- description: Management and resource creation on behalf of an organization
+  name: Organizations
+- description: Management of StackHawk applications and environments
+  name: Applications
+- description: Information about the authenticated user
+  name: User
+- description: Authentication and access to the StackHawk API
+  name: Api Authentication
+paths:
+  /api/v1/org/{orgId}/app:
+    post:
+      description: Creates a new application for this organization.
+      operationId: createApplication
+      parameters:
+      - description: UUID identifier for this StackHawk Organization
+        explode: false
+        in: path
+        name: orgId
+        required: true
+        schema:
+          format: uuid
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/application.NewApplicationRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/application.Application'
+          description: |-
+            StackHawk Applications will namespace scanResults from HawkScan, and can manage scan settings that can be configured to influence HawkScan behavior.
+            For more information, see [Applications](https://docs.stackhawk.com/web-app/applications.html).
+        "401":
+          description: Unauthorized
+        "400":
+          description: Bad Request
+      security:
+      - BearerAuth: []
+      summary: Create application
+      tags:
+      - Applications
+      - Organizations
+      x-contentType: application/json
+      x-accepts: application/json
+  /api/v1/app/{appId}/env/{envId}:
+    delete:
+      description: Deletes this environment.
+      operationId: deleteEnvironment
+      parameters:
+      - description: UUID identifier for this StackHawk Application
+        explode: false
+        in: path
+        name: appId
+        required: true
+        schema:
+          format: uuid
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          type: string
+        style: simple
+      - description: UUID identifier for this StackHawk Environment
+        explode: false
+        in: path
+        name: envId
+        required: true
+        schema:
+          format: uuid
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: OK
+        "401":
+          description: Unauthorized
+        "400":
+          description: Bad Request
+      security:
+      - BearerAuth: []
+      summary: Delete environment
+      tags:
+      - Applications
+      x-accepts: application/json
+    post:
+      description: Updates this environment.
+      operationId: updateEnvironment
+      parameters:
+      - description: UUID identifier for this StackHawk Application
+        explode: false
+        in: path
+        name: appId
+        required: true
+        schema:
+          format: uuid
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          type: string
+        style: simple
+      - description: UUID identifier for this StackHawk Environment
+        explode: false
+        in: path
+        name: envId
+        required: true
+        schema:
+          format: uuid
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/application.UpdateApplicationEnvRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/application.Application'
+          description: |-
+            StackHawk Applications will namespace scanResults from HawkScan, and can manage scan settings that can be configured to influence HawkScan behavior.
+            For more information, see [Applications](https://docs.stackhawk.com/web-app/applications.html).
+        "401":
+          description: Unauthorized
+        "400":
+          description: Bad Request
+      security:
+      - BearerAuth: []
+      summary: Update environment
+      tags:
+      - Applications
+      x-contentType: application/json
+      x-accepts: application/json
+  /api/v1/app/{appId}/env:
+    post:
+      description: Creates a new environment under this application.
+      operationId: createEnvironment
+      parameters:
+      - description: UUID identifier for this StackHawk Application
+        explode: false
+        in: path
+        name: appId
+        required: true
+        schema:
+          format: uuid
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/application.NewApplicationEnvRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/application.Application'
+          description: |-
+            StackHawk Applications will namespace scanResults from HawkScan, and can manage scan settings that can be configured to influence HawkScan behavior.
+            For more information, see [Applications](https://docs.stackhawk.com/web-app/applications.html).
+        "401":
+          description: Unauthorized
+        "400":
+          description: Bad Request
+      security:
+      - BearerAuth: []
+      summary: Create environment
+      tags:
+      - Applications
+      x-contentType: application/json
+      x-accepts: application/json
+  /api/v1/app/{appId}:
+    delete:
+      description: Deletes this application.
+      operationId: deleteApplication
+      parameters:
+      - description: UUID identifier for this StackHawk Application
+        explode: false
+        in: path
+        name: appId
+        required: true
+        schema:
+          format: uuid
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          type: string
+        style: simple
+      responses:
+        "200":
+          content: {}
+          description: OK
+        "401":
+          description: Unauthorized
+        "400":
+          description: Bad Request
+      security:
+      - BearerAuth: []
+      summary: Delete application
+      tags:
+      - Applications
+      x-accepts: application/json
+    get:
+      description: Gets this application.
+      operationId: getApplication
+      parameters:
+      - description: UUID identifier for this StackHawk Application
+        explode: false
+        in: path
+        name: appId
+        required: true
+        schema:
+          format: uuid
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/application.Application'
+          description: |-
+            StackHawk Applications will namespace scanResults from HawkScan, and can manage scan settings that can be configured to influence HawkScan behavior.
+            For more information, see [Applications](https://docs.stackhawk.com/web-app/applications.html).
+        "401":
+          description: Unauthorized
+        "400":
+          description: Bad Request
+      security:
+      - BearerAuth: []
+      summary: Get application
+      tags:
+      - Applications
+      x-accepts: application/json
+    post:
+      description: Updates this application.
+      operationId: updateApplication
+      parameters:
+      - description: UUID identifier for this StackHawk Application
+        explode: false
+        in: path
+        name: appId
+        required: true
+        schema:
+          format: uuid
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/application.UpdateApplicationRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/application.Application'
+          description: |-
+            StackHawk Applications will namespace scanResults from HawkScan, and can manage scan settings that can be configured to influence HawkScan behavior.
+            For more information, see [Applications](https://docs.stackhawk.com/web-app/applications.html).
+        "401":
+          description: Unauthorized
+        "400":
+          description: Bad Request
+      security:
+      - BearerAuth: []
+      summary: Update application
+      tags:
+      - Applications
+      x-contentType: application/json
+      x-accepts: application/json
+  /api/v1/user:
+    get:
+      description: |+
+        ## User Details
+
+        This endpoint provides details about the requesting user. This information helps determine what access an authorized user has on the StackHawk platform, and how they are authenticated.
+
+      operationId: getUser
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user.UserResponse'
+          description: OK
+      security:
+      - BearerAuth: []
+      summary: Get the current user
+      tags:
+      - User
+      x-accepts: application/json
+  /api/v1/auth/refresh-token:
+    get:
+      description: |
+        ## Access Refresh
+
+        Once authenticated, an issued API Access Token has a will expire after 30 minutes.
+
+        This authenticated endpoint will "refresh" the access token by issuing a new jwt token with an extended expiration.
+
+        For best practices, use the `/refresh` route for refreshing authentication access to extend the API session.
+      operationId: refreshToken
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user.JWT'
+          description: '* A [JSON Web Token](https://jwt.io/) used to authenticate
+            requests to the StackHawk API'
+      security:
+      - BearerAuth: []
+      summary: Refresh existing authentication
+      tags:
+      - Api Authentication
+      x-accepts: application/json
+  /api/v1/auth/login:
+    get:
+      description: |+
+        ## Access Login
+
+        Using a [StackHawk API Key](https://app.stackhawk.com/settings/apikeys), this endpoint returns an *access token* which can then be used in the `authorization` header of subsequent API requests.
+        The access token returned is an [RFC-7519](https://datatracker.ietf.org/doc/html/rfc7519) compliant [jwt access token](https://jwt.io/).
+
+        Access tokens have an expiration of *30 minutes* and are issued on behalf of the requesting user.
+
+        An access token can only be used to interact with StackHawk resources that belong to the user, or to organizations that user is a part of and permissioned for.
+
+        For best practices, use the `/login` route only when starting a new access session to the StackHawk API, and use the `/refresh` route to request a fresh token to extend an API session.
+
+
+      operationId: login
+      parameters:
+      - description: Specialized request header to supply your **StackHawk API Key**
+          which authorizes further requests.
+        explode: false
+        in: header
+        name: X-ApiKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user.JWT'
+          description: '* A [JSON Web Token](https://jwt.io/) used to authenticate
+            requests to the StackHawk API'
+      security: []
+      summary: Login with API Key
+      tags:
+      - Api Authentication
+      x-accepts: application/json
+  /api/v1/app/{orgId}/list:
+    get:
+      description: Lists applications that belong to this organization.
+      operationId: listApplications
+      parameters:
+      - description: UUID identifier for this StackHawk Organization
+        explode: false
+        in: path
+        name: orgId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: A comma-deliminated list of UUID identifiers of StackHawk Applications.
+        explode: true
+        in: query
+        name: appIds
+        required: false
+        schema:
+          items:
+            type: string
+          type: array
+        style: form
+      - description: Names of environments to filter results by
+        explode: true
+        in: query
+        name: envs
+        required: false
+        schema:
+          items:
+            type: string
+          type: array
+        style: form
+      - description: If enabled returns a shortened list of applications, omiting
+          environment entries
+        explode: true
+        in: query
+        name: ignoreEnvs
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      - description: Pagination response size limit
+        explode: true
+        in: query
+        name: pageSize
+        required: false
+        schema:
+          default: 10
+          type: number
+        style: form
+      - description: Pagination request page increment
+        explode: true
+        in: query
+        name: pageToken
+        required: false
+        schema:
+          default: ""
+          type: string
+        style: form
+      - description: Resource field to sort paginated response by
+        explode: true
+        in: query
+        name: sortField
+        required: false
+        schema:
+          default: name
+          enum:
+          - id
+          - name
+          type: string
+        style: form
+      - description: Paginated results are sorted 'asc' or 'desc'
+        explode: true
+        in: query
+        name: sortDir
+        required: false
+        schema:
+          default: asc
+          enum:
+          - asc
+          - desc
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/application.ListApplicationsResponse'
+          description: Paginated response of applications.
+        "401":
+          description: Unauthorized
+      security:
+      - BearerAuth: []
+      summary: List applications
+      tags:
+      - Applications
+      - Organizations
+      x-accepts: application/json
+  /api/v1/app/{appId}/env/list:
+    get:
+      description: List environments that belong to this application.
+      operationId: listEnvironments
+      parameters:
+      - description: UUID identifier for this StackHawk Application
+        explode: false
+        in: path
+        name: appId
+        required: true
+        schema:
+          format: uuid
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          type: string
+        style: simple
+      - description: Names of environments to filter results by
+        explode: true
+        in: query
+        name: envs
+        required: false
+        schema:
+          items:
+            type: string
+          type: array
+        style: form
+      - description: Pagination response size limit
+        explode: true
+        in: query
+        name: pageSize
+        required: false
+        schema:
+          default: 10
+          type: number
+        style: form
+      - description: Pagination request page increment
+        explode: true
+        in: query
+        name: pageToken
+        required: false
+        schema:
+          default: ""
+          type: string
+        style: form
+      - description: Resource field to sort paginated response by
+        explode: true
+        in: query
+        name: sortField
+        required: false
+        schema:
+          default: name
+          enum:
+          - id
+          - name
+          type: string
+        style: form
+      - description: Paginated results are sorted 'asc' or 'desc'
+        explode: true
+        in: query
+        name: sortDir
+        required: false
+        schema:
+          default: asc
+          enum:
+          - asc
+          - desc
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/application.ListEnvironmentsResponse'
+          description: Paginated response of environments.
+        "401":
+          description: Unauthorized
+      security:
+      - BearerAuth: []
+      summary: List environments
+      tags:
+      - Applications
+      x-accepts: application/json
+components:
+  schemas:
+    application.NewApplicationRequest:
+      description: Request to create a new StackHawk Application.
+      properties:
+        dataType:
+          description: a specified dataType for this new application.
+          enum:
+          - NONE
+          - PII
+          - PCI
+          - FIN
+          - PKI
+          - HIPAA
+          - FERPA
+          type: string
+        env:
+          description: the initial environment for this new application.
+          type: string
+        name:
+          description: the name of this new application.
+          type: string
+        organizationId:
+          description: the UUID identifier of the organization that will own this
+            application.
+          type: string
+        riskLevel:
+          description: a specified riskLevel for this new application.
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - CRITICAL
+          type: string
+      type: object
+    application.Application:
+      description: |-
+        StackHawk Applications will namespace scanResults from HawkScan, and can manage scan settings that can be configured to influence HawkScan behavior.
+        For more information, see [Applications](https://docs.stackhawk.com/web-app/applications.html).
+      example:
+        riskLevel: LOW
+        dataType: NONE
+        name: name
+        envId: envId
+        applicationId: applicationId
+        env: env
+      properties:
+        applicationId:
+          description: the UUID identifier of this application.
+          type: string
+        dataType:
+          description: the perceived dataType of this application.
+          enum:
+          - NONE
+          - PII
+          - PCI
+          - FIN
+          - PKI
+          - HIPAA
+          - FERPA
+          type: string
+        env:
+          description: the name of this environment.
+          type: string
+        envId:
+          description: the UUID identifier of this environment.
+          type: string
+        name:
+          description: the name of this application.
+          type: string
+        riskLevel:
+          description: the perceived riskLevel of this application.
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - CRITICAL
+          type: string
+      type: object
+    application.UpdateApplicationEnvRequest:
+      description: Request to update an existing StackHawk Environment.
+      properties:
+        applicationId:
+          description: the UUID identifier of this application.
+          type: string
+        dataType:
+          description: updated riskLevel for this environment.
+          enum:
+          - NONE
+          - PII
+          - PCI
+          - FIN
+          - PKI
+          - HIPAA
+          - FERPA
+          type: string
+        envId:
+          description: the UUID identifier of this environment.
+          type: string
+        name:
+          description: updated name for this environment.
+          type: string
+        riskLevel:
+          description: updated riskLevel for this environment.
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - CRITICAL
+          type: string
+      type: object
+    application.NewApplicationEnvRequest:
+      description: Request to create a new StackHawk Environment for an existing application.
+      properties:
+        applicationId:
+          description: the UUID identifier of this application.
+          type: string
+        env:
+          description: the name of this new environment.
+          type: string
+      type: object
+    application.UpdateApplicationRequest:
+      description: Request to update an existing StackHawk Application.
+      properties:
+        applicationId:
+          description: the UUID identifier of this application.
+          type: string
+        dataType:
+          description: updated dataType for this application.
+          enum:
+          - NONE
+          - PII
+          - PCI
+          - FIN
+          - PKI
+          - HIPAA
+          - FERPA
+          type: string
+        name:
+          description: updated name for this application.
+          type: string
+        riskLevel:
+          description: updated riskLevel for this application.
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - CRITICAL
+          type: string
+      type: object
+    feature.Feature:
+      example:
+        name: name
+        enabled: true
+      properties:
+        enabled:
+          type: boolean
+        name:
+          type: string
+      type: object
+    organization.Organization:
+      example:
+        features:
+        - name: name
+          enabled: true
+        - name: name
+          enabled: true
+        isLinkedToExternalBilling: true
+        name: name
+        id: id
+        subscription:
+          appCount: 0
+          quantity: 1
+          endDate: 6
+          recurringIntervalCount: 5
+          productName: productName
+          userCount: 7
+          isEnabled: true
+          stackhawkOrgId: stackhawkOrgId
+          customerId: customerId
+          unitAmount: 2
+          subscriptionId: subscriptionId
+          recurringInterval: RECURRING_INTERVAL_UNKNOWN
+          startDate: 5
+          status: SUBSCRIPTION_UNKNOWN
+        plan: plan
+      properties:
+        features:
+          description: override to the feature flags in the plan
+          items:
+            $ref: '#/components/schemas/feature.Feature'
+          type: array
+        id:
+          type: string
+        isLinkedToExternalBilling:
+          type: boolean
+        name:
+          type: string
+        plan:
+          type: string
+        subscription:
+          $ref: '#/components/schemas/organization.Subscription'
+      type: object
+    organization.Subscription:
+      description: Properties of the external billing subscription for entitled access
+        to the StackHawk platform
+      example:
+        appCount: 0
+        quantity: 1
+        endDate: 6
+        recurringIntervalCount: 5
+        productName: productName
+        userCount: 7
+        isEnabled: true
+        stackhawkOrgId: stackhawkOrgId
+        customerId: customerId
+        unitAmount: 2
+        subscriptionId: subscriptionId
+        recurringInterval: RECURRING_INTERVAL_UNKNOWN
+        startDate: 5
+        status: SUBSCRIPTION_UNKNOWN
+      properties:
+        appCount:
+          description: Soft application limit for this organization
+          format: int64
+          type: integer
+        customerId:
+          description: CustomerId from billing provider
+          type: string
+        endDate:
+          description: End Date of this subscription, in seconds from epoch
+          format: int64
+          type: integer
+        isEnabled:
+          description: If external billing is enabled
+          type: boolean
+        productName:
+          description: The name of the purchased product subscription
+          type: string
+        quantity:
+          description: The quantity of units in this subscription
+          format: int64
+          type: integer
+        recurringInterval:
+          description: The billing recurring interval for this subscription
+          enum:
+          - RECURRING_INTERVAL_UNKNOWN
+          - MONTH
+          - YEAR
+          type: string
+        recurringIntervalCount:
+          description: How often in the recurring interval billing occurs
+          format: int64
+          type: integer
+        stackhawkOrgId:
+          description: The organization UUID for this subscription
+          type: string
+        startDate:
+          description: Start Date of this subscription, in seconds from epoch
+          format: int64
+          type: integer
+        status:
+          description: The status of the organization subscription
+          enum:
+          - SUBSCRIPTION_UNKNOWN
+          - TRIALING
+          - ACTIVE
+          - INCOMPLETE
+          - CANCELLED
+          - FREE
+          type: string
+        subscriptionId:
+          description: SubscriptionId from billing provider
+          type: string
+        unitAmount:
+          description: The number of units with this subscription
+          format: int64
+          type: integer
+        userCount:
+          description: Soft user limit for this organization
+          format: int64
+          type: integer
+      type: object
+    user.ProviderInfo:
+      description: Information about a users access Provider to the StackHawk platform
+      example:
+        clientId: clientId
+        created: 9
+        slug: GITHUB
+      properties:
+        clientId:
+          type: string
+        created:
+          format: int64
+          type: integer
+        slug:
+          enum:
+          - GITHUB
+          - GOOGLE
+          - STACKHAWK
+          - SAMLIDP
+          type: string
+      type: object
+    user.User:
+      description: Represents a StackHawk User
+      example:
+        external:
+          firstName: firstName
+          lastName: lastName
+          preferences:
+            dontReceiveUpdatesEmail: true
+            dontReceiveWeeklyEmail: true
+            defaultOrganizationId: defaultOrganizationId
+          avatarUrl: avatarUrl
+          organizations:
+          - features:
+            - name: name
+              enabled: true
+            - name: name
+              enabled: true
+            role: UNKNOWN
+            organization:
+              features:
+              - name: name
+                enabled: true
+              - name: name
+                enabled: true
+              isLinkedToExternalBilling: true
+              name: name
+              id: id
+              subscription:
+                appCount: 0
+                quantity: 1
+                endDate: 6
+                recurringIntervalCount: 5
+                productName: productName
+                userCount: 7
+                isEnabled: true
+                stackhawkOrgId: stackhawkOrgId
+                customerId: customerId
+                unitAmount: 2
+                subscriptionId: subscriptionId
+                recurringInterval: RECURRING_INTERVAL_UNKNOWN
+                startDate: 5
+                status: SUBSCRIPTION_UNKNOWN
+              plan: plan
+          - features:
+            - name: name
+              enabled: true
+            - name: name
+              enabled: true
+            role: UNKNOWN
+            organization:
+              features:
+              - name: name
+                enabled: true
+              - name: name
+                enabled: true
+              isLinkedToExternalBilling: true
+              name: name
+              id: id
+              subscription:
+                appCount: 0
+                quantity: 1
+                endDate: 6
+                recurringIntervalCount: 5
+                productName: productName
+                userCount: 7
+                isEnabled: true
+                stackhawkOrgId: stackhawkOrgId
+                customerId: customerId
+                unitAmount: 2
+                subscriptionId: subscriptionId
+                recurringInterval: RECURRING_INTERVAL_UNKNOWN
+                startDate: 5
+                status: SUBSCRIPTION_UNKNOWN
+              plan: plan
+          fullName: fullName
+          id: id
+          email: email
+          applicationIds:
+          - applicationIds
+          - applicationIds
+        organizationIds:
+        - organizationIds
+        - organizationIds
+        provider:
+          clientId: clientId
+          created: 9
+          slug: GITHUB
+        stackhawkId: stackhawkId
+      properties:
+        external:
+          $ref: '#/components/schemas/user.UserExternal'
+        organizationIds:
+          description: '**Deprecated**'
+          items:
+            type: string
+          properties:
+            empty:
+              type: boolean
+          type: array
+        provider:
+          $ref: '#/components/schemas/user.ProviderInfo'
+        stackhawkId:
+          description: internal identifier for this user. _this is not the user uuid_
+          type: string
+      type: object
+    user.UserExternal:
+      description: Information about the User and how they can access the platform
+      example:
+        firstName: firstName
+        lastName: lastName
+        preferences:
+          dontReceiveUpdatesEmail: true
+          dontReceiveWeeklyEmail: true
+          defaultOrganizationId: defaultOrganizationId
+        avatarUrl: avatarUrl
+        organizations:
+        - features:
+          - name: name
+            enabled: true
+          - name: name
+            enabled: true
+          role: UNKNOWN
+          organization:
+            features:
+            - name: name
+              enabled: true
+            - name: name
+              enabled: true
+            isLinkedToExternalBilling: true
+            name: name
+            id: id
+            subscription:
+              appCount: 0
+              quantity: 1
+              endDate: 6
+              recurringIntervalCount: 5
+              productName: productName
+              userCount: 7
+              isEnabled: true
+              stackhawkOrgId: stackhawkOrgId
+              customerId: customerId
+              unitAmount: 2
+              subscriptionId: subscriptionId
+              recurringInterval: RECURRING_INTERVAL_UNKNOWN
+              startDate: 5
+              status: SUBSCRIPTION_UNKNOWN
+            plan: plan
+        - features:
+          - name: name
+            enabled: true
+          - name: name
+            enabled: true
+          role: UNKNOWN
+          organization:
+            features:
+            - name: name
+              enabled: true
+            - name: name
+              enabled: true
+            isLinkedToExternalBilling: true
+            name: name
+            id: id
+            subscription:
+              appCount: 0
+              quantity: 1
+              endDate: 6
+              recurringIntervalCount: 5
+              productName: productName
+              userCount: 7
+              isEnabled: true
+              stackhawkOrgId: stackhawkOrgId
+              customerId: customerId
+              unitAmount: 2
+              subscriptionId: subscriptionId
+              recurringInterval: RECURRING_INTERVAL_UNKNOWN
+              startDate: 5
+              status: SUBSCRIPTION_UNKNOWN
+            plan: plan
+        fullName: fullName
+        id: id
+        email: email
+        applicationIds:
+        - applicationIds
+        - applicationIds
+      properties:
+        applicationIds:
+          description: array of application ids this user has access to
+          items:
+            type: string
+          properties:
+            empty:
+              type: boolean
+          type: array
+        avatarUrl:
+          description: users avatar url
+          type: string
+        email:
+          description: users email address
+          type: string
+        firstName:
+          description: users first name
+          type: string
+        fullName:
+          description: users full name
+          type: string
+        id:
+          description: the UUID identifier of this user
+          type: string
+        lastName:
+          description: users last name
+          type: string
+        organizations:
+          description: organizations a user is a part of
+          items:
+            $ref: '#/components/schemas/user.UserOrganization'
+          type: array
+        preferences:
+          $ref: '#/components/schemas/user.UserPreferences'
+      type: object
+    user.UserOrganization:
+      description: Represents the relationship between a User and an Organization
+        they belong to.
+      example:
+        features:
+        - name: name
+          enabled: true
+        - name: name
+          enabled: true
+        role: UNKNOWN
+        organization:
+          features:
+          - name: name
+            enabled: true
+          - name: name
+            enabled: true
+          isLinkedToExternalBilling: true
+          name: name
+          id: id
+          subscription:
+            appCount: 0
+            quantity: 1
+            endDate: 6
+            recurringIntervalCount: 5
+            productName: productName
+            userCount: 7
+            isEnabled: true
+            stackhawkOrgId: stackhawkOrgId
+            customerId: customerId
+            unitAmount: 2
+            subscriptionId: subscriptionId
+            recurringInterval: RECURRING_INTERVAL_UNKNOWN
+            startDate: 5
+            status: SUBSCRIPTION_UNKNOWN
+          plan: plan
+      properties:
+        features:
+          description: Specific features available to this organization
+          items:
+            $ref: '#/components/schemas/feature.Feature'
+          type: array
+        organization:
+          $ref: '#/components/schemas/organization.Organization'
+        role:
+          description: The organization role the user belongs to within this organization
+          enum:
+          - UNKNOWN
+          - OWNER
+          - ADMIN
+          type: string
+      type: object
+    user.UserPreferences:
+      description: User settings and preferences for interaction within StackHawk
+      example:
+        dontReceiveUpdatesEmail: true
+        dontReceiveWeeklyEmail: true
+        defaultOrganizationId: defaultOrganizationId
+      properties:
+        defaultOrganizationId:
+          description: the UUID identifier of the organization a user currently belongs
+            to
+          type: string
+        dontReceiveUpdatesEmail:
+          description: if `true`, the user will be opted out of Company Update emails
+          type: boolean
+        dontReceiveWeeklyEmail:
+          description: if `true`, the user will be opted out of weekly organization
+            update emails
+          type: boolean
+      type: object
+    user.UserResponse:
+      example:
+        unclaimedInviteOrganizationIds:
+        - unclaimedInviteOrganizationIds
+        - unclaimedInviteOrganizationIds
+        user:
+          external:
+            firstName: firstName
+            lastName: lastName
+            preferences:
+              dontReceiveUpdatesEmail: true
+              dontReceiveWeeklyEmail: true
+              defaultOrganizationId: defaultOrganizationId
+            avatarUrl: avatarUrl
+            organizations:
+            - features:
+              - name: name
+                enabled: true
+              - name: name
+                enabled: true
+              role: UNKNOWN
+              organization:
+                features:
+                - name: name
+                  enabled: true
+                - name: name
+                  enabled: true
+                isLinkedToExternalBilling: true
+                name: name
+                id: id
+                subscription:
+                  appCount: 0
+                  quantity: 1
+                  endDate: 6
+                  recurringIntervalCount: 5
+                  productName: productName
+                  userCount: 7
+                  isEnabled: true
+                  stackhawkOrgId: stackhawkOrgId
+                  customerId: customerId
+                  unitAmount: 2
+                  subscriptionId: subscriptionId
+                  recurringInterval: RECURRING_INTERVAL_UNKNOWN
+                  startDate: 5
+                  status: SUBSCRIPTION_UNKNOWN
+                plan: plan
+            - features:
+              - name: name
+                enabled: true
+              - name: name
+                enabled: true
+              role: UNKNOWN
+              organization:
+                features:
+                - name: name
+                  enabled: true
+                - name: name
+                  enabled: true
+                isLinkedToExternalBilling: true
+                name: name
+                id: id
+                subscription:
+                  appCount: 0
+                  quantity: 1
+                  endDate: 6
+                  recurringIntervalCount: 5
+                  productName: productName
+                  userCount: 7
+                  isEnabled: true
+                  stackhawkOrgId: stackhawkOrgId
+                  customerId: customerId
+                  unitAmount: 2
+                  subscriptionId: subscriptionId
+                  recurringInterval: RECURRING_INTERVAL_UNKNOWN
+                  startDate: 5
+                  status: SUBSCRIPTION_UNKNOWN
+                plan: plan
+            fullName: fullName
+            id: id
+            email: email
+            applicationIds:
+            - applicationIds
+            - applicationIds
+          organizationIds:
+          - organizationIds
+          - organizationIds
+          provider:
+            clientId: clientId
+            created: 9
+            slug: GITHUB
+          stackhawkId: stackhawkId
+      properties:
+        unclaimedInviteOrganizationIds:
+          items:
+            type: string
+          properties:
+            empty:
+              type: boolean
+          type: array
+        user:
+          $ref: '#/components/schemas/user.User'
+      type: object
+    user.JWT:
+      description: '* A [JSON Web Token](https://jwt.io/) used to authenticate requests
+        to the StackHawk API'
+      example:
+        token: token
+      properties:
+        token:
+          description: the bearer token value
+          type: string
+      type: object
+    application.ListApplicationsResponse:
+      description: Paginated response of applications.
+      example:
+        nextPageToken: nextPageToken
+        totalCount: 0
+        applications:
+        - riskLevel: LOW
+          dataType: NONE
+          name: name
+          envId: envId
+          applicationId: applicationId
+          env: env
+        - riskLevel: LOW
+          dataType: NONE
+          name: name
+          envId: envId
+          applicationId: applicationId
+          env: env
+      properties:
+        applications:
+          description: found list of applications.
+          items:
+            $ref: '#/components/schemas/application.Application'
+          type: array
+        nextPageToken:
+          description: pageToken to provide for the next page of results.
+          type: string
+        totalCount:
+          description: total number of results.
+          format: int64
+          type: integer
+      type: object
+    application.AlertStatusStats:
+      example:
+        alertStatus: UNKNOWN
+        severityStats:
+          key: 0
+        totalCount: 6
+      properties:
+        alertStatus:
+          enum:
+          - UNKNOWN
+          - FALSE_POSITIVE
+          - RISK_ACCEPTED
+          - PROMOTED
+          type: string
+        severityStats:
+          additionalProperties:
+            format: int32
+            type: integer
+          deprecated: true
+          type: object
+        totalCount:
+          format: int32
+          type: integer
+      type: object
+    application.Environment:
+      description: A decorated application's environment with details of recent scan
+        stats included.
+      example:
+        environmentId: environmentId
+        scanSummaries:
+        - scanId: scanId
+          alertStats:
+            alertStatusStats:
+            - alertStatus: UNKNOWN
+              severityStats:
+                key: 0
+              totalCount: 6
+            - alertStatus: UNKNOWN
+              severityStats:
+                key: 0
+              totalCount: 6
+            totalAlerts: 1
+            uniqueAlerts: 5
+          configHash: configHash
+          version: version
+          timestamp: 5
+        - scanId: scanId
+          alertStats:
+            alertStatusStats:
+            - alertStatus: UNKNOWN
+              severityStats:
+                key: 0
+              totalCount: 6
+            - alertStatus: UNKNOWN
+              severityStats:
+                key: 0
+              totalCount: 6
+            totalAlerts: 1
+            uniqueAlerts: 5
+          configHash: configHash
+          version: version
+          timestamp: 5
+        environmentName: environmentName
+        currentScanSummary:
+          scanId: scanId
+          alertStats:
+            alertStatusStats:
+            - alertStatus: UNKNOWN
+              severityStats:
+                key: 0
+              totalCount: 6
+            - alertStatus: UNKNOWN
+              severityStats:
+                key: 0
+              totalCount: 6
+            totalAlerts: 1
+            uniqueAlerts: 5
+          configHash: configHash
+          version: version
+          timestamp: 5
+      properties:
+        currentScanSummary:
+          $ref: '#/components/schemas/application.ScanSummary'
+        environmentId:
+          description: the UUID identifier of this environment.
+          type: string
+        environmentName:
+          description: the name of this environment.
+          type: string
+        scanSummaries:
+          description: summaries of recent scans from this environment.
+          items:
+            $ref: '#/components/schemas/application.ScanSummary'
+          type: array
+      type: object
+    application.ListEnvironmentsResponse:
+      description: Paginated response of environments.
+      example:
+        environments:
+        - environmentId: environmentId
+          scanSummaries:
+          - scanId: scanId
+            alertStats:
+              alertStatusStats:
+              - alertStatus: UNKNOWN
+                severityStats:
+                  key: 0
+                totalCount: 6
+              - alertStatus: UNKNOWN
+                severityStats:
+                  key: 0
+                totalCount: 6
+              totalAlerts: 1
+              uniqueAlerts: 5
+            configHash: configHash
+            version: version
+            timestamp: 5
+          - scanId: scanId
+            alertStats:
+              alertStatusStats:
+              - alertStatus: UNKNOWN
+                severityStats:
+                  key: 0
+                totalCount: 6
+              - alertStatus: UNKNOWN
+                severityStats:
+                  key: 0
+                totalCount: 6
+              totalAlerts: 1
+              uniqueAlerts: 5
+            configHash: configHash
+            version: version
+            timestamp: 5
+          environmentName: environmentName
+          currentScanSummary:
+            scanId: scanId
+            alertStats:
+              alertStatusStats:
+              - alertStatus: UNKNOWN
+                severityStats:
+                  key: 0
+                totalCount: 6
+              - alertStatus: UNKNOWN
+                severityStats:
+                  key: 0
+                totalCount: 6
+              totalAlerts: 1
+              uniqueAlerts: 5
+            configHash: configHash
+            version: version
+            timestamp: 5
+        - environmentId: environmentId
+          scanSummaries:
+          - scanId: scanId
+            alertStats:
+              alertStatusStats:
+              - alertStatus: UNKNOWN
+                severityStats:
+                  key: 0
+                totalCount: 6
+              - alertStatus: UNKNOWN
+                severityStats:
+                  key: 0
+                totalCount: 6
+              totalAlerts: 1
+              uniqueAlerts: 5
+            configHash: configHash
+            version: version
+            timestamp: 5
+          - scanId: scanId
+            alertStats:
+              alertStatusStats:
+              - alertStatus: UNKNOWN
+                severityStats:
+                  key: 0
+                totalCount: 6
+              - alertStatus: UNKNOWN
+                severityStats:
+                  key: 0
+                totalCount: 6
+              totalAlerts: 1
+              uniqueAlerts: 5
+            configHash: configHash
+            version: version
+            timestamp: 5
+          environmentName: environmentName
+          currentScanSummary:
+            scanId: scanId
+            alertStats:
+              alertStatusStats:
+              - alertStatus: UNKNOWN
+                severityStats:
+                  key: 0
+                totalCount: 6
+              - alertStatus: UNKNOWN
+                severityStats:
+                  key: 0
+                totalCount: 6
+              totalAlerts: 1
+              uniqueAlerts: 5
+            configHash: configHash
+            version: version
+            timestamp: 5
+        nextPageToken: nextPageToken
+        totalCount: 2
+      properties:
+        environments:
+          description: found list of environments.
+          items:
+            $ref: '#/components/schemas/application.Environment'
+          type: array
+        nextPageToken:
+          description: pageToken to provide for the next page of results.
+          type: string
+        totalCount:
+          description: total number of results.
+          format: int64
+          type: integer
+      type: object
+    application.ScanAlertStats:
+      example:
+        alertStatusStats:
+        - alertStatus: UNKNOWN
+          severityStats:
+            key: 0
+          totalCount: 6
+        - alertStatus: UNKNOWN
+          severityStats:
+            key: 0
+          totalCount: 6
+        totalAlerts: 1
+        uniqueAlerts: 5
+      properties:
+        alertStatusStats:
+          items:
+            $ref: '#/components/schemas/application.AlertStatusStats'
+          type: array
+        totalAlerts:
+          format: int32
+          type: integer
+        uniqueAlerts:
+          format: int32
+          type: integer
+      type: object
+    application.ScanSummary:
+      description: A summary of findings from a scanResult.
+      example:
+        scanId: scanId
+        alertStats:
+          alertStatusStats:
+          - alertStatus: UNKNOWN
+            severityStats:
+              key: 0
+            totalCount: 6
+          - alertStatus: UNKNOWN
+            severityStats:
+              key: 0
+            totalCount: 6
+          totalAlerts: 1
+          uniqueAlerts: 5
+        configHash: configHash
+        version: version
+        timestamp: 5
+      properties:
+        alertStats:
+          $ref: '#/components/schemas/application.ScanAlertStats'
+        configHash:
+          description: hash of the HawkScan configuration used for this scan.
+          type: string
+        scanId:
+          description: the UUID identifier of this scan.
+          type: string
+        timestamp:
+          description: secondsSinceEpoch timestamp of when the scan was run.
+          format: int64
+          type: integer
+        version:
+          description: the version of HawkScan used for this scan.
+          type: string
+      type: object
+  securitySchemes:
+    BearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
+

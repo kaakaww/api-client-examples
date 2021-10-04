@@ -1,0 +1,1173 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "StackHawk Public API",
+    "description" : "\n![STACKHAWK](https://images.ctfassets.net/nx13ojx82pll/1zPawvEGOq9zKX8PuVw0kB/e4a31b30fdb07b7e424277d7824d2ffe/stackhawk-long.png)\n# StackHawk API\n\nThis is the OpenAPI specification for the [StackHawk](https://www.stackhawk.com) REST API, affectionately known as _Falcon_ 🦅 #Kaakaww!\n\nStackHawk is an application security testing tool built for developers. With powerful automation and integration capabilities, StackHawk gives engineers the ability to find and fix security vulnerabilities on every merge.\n\n## Getting Started\n\nTo make requests to the StackHawk API, you will first need an **API Key** from the StackHawk platform. That will be used to request an **access token**, which is used to authorize requests made to the StackHawk API.\n\nUse of the StackHawk API will require a [StackHawk account](https://auth.stackhawk.com) and an organization with sufficient permissions.\n\nFrom the StackHawk platform, under [Settings > API Keys](https://app.stackhawk.com/settings/apikeys) create a new API Key. These secrets are long-lived, so store this value in a secure fashion.\n\n### Authorization\n\nRequests made to the StackHawk API server are authorized following the [OAuth2.0 protocol](https://oauth.net/2/)\n\nTo get an access token, make a request to `GET /api/v1/auth/login` and provide the user apikey through the `X-ApiKey` request header. This route will then return an access token that can authenticate further API requests.\nThis token can then be used to authenticate subsequent requests, using the `authorization: Bearer` header.\n\nFor more information, see the **Api Authentication** section.\n\n### Rate Limiting\n\nApi calls are ratelimited, with at most 180 requests per minute.\n\n## StackHawk Api Standards\n\n### Client Errors\n\nAPI Calls that fail due to client input will return 4xx status code.\n\n#### `401 Unauthorized`\nThe server doesn't think you should be making this request.\n\nThis error is intentionally vague for security purposes, but any of the following could cause it:\n\n- no authorization was provided\n- authorization has expired\n- authorization is insufficient for the requested resource\n\n#### `404 Not Found`\n\nThe route or resource does not exist.\n\n#### `400 Bad Request`\nThe server could not process this request, although it may have tried.\nThe JSON reponse body `message` will include details on what input was invalid.\n\n### Pagination and Sorting\n\nListing API routes will return resources in a paginated fashion.\nPaginated requests follow a pattern of taking the following optional path parameters:\n\n* `pageToken`: a string incrementing count of pages in the pagination, starting from '0'\n* `pageSize`: the number of elements to request in the page, defaults to 10\n* `sortField`: sorts the listed resource by an approved field, defaults to sorting by resource name\n* `sortDir`: either 'asc' or 'desc', defaults ascending\n\nThe responseBody of these API routes will additionally include two fields:\n\n* `nextPageToken`: a string indicating the next `pageToken` to pass in for the next page of results with this request\n* `totalCount`: the total number of resources the query can paginate through\n\n## Questions? Comments? Concerns? Kaa-Kaww?\n\nWe are always making advancements and improvements to our Platform, Scanner and the StackHawk API.\nIf you encounter an issue you cannot solve with this documentation, please reach out to [support@stackhawk.com](mailto:support@stackhawk.com) with your questions, and we’ll help you troubleshoot any issues and get you soaring with StackHawk.\n\n\n",
+    "termsOfService" : "https://www.stackhawk.com/terms-of-service/",
+    "contact" : {
+      "name" : "StackHawk Public API",
+      "url" : "https://www.stackhawk.com",
+      "email" : "hello@stackhawk.com"
+    },
+    "license" : {
+      "name" : "private"
+    },
+    "version" : "0.0.1"
+  },
+  "externalDocs" : {
+    "description" : "StackHawk API Documentation",
+    "url" : "https://apidocs.stackhawk.com"
+  },
+  "servers" : [ {
+    "url" : "https://api.stackhawk.com",
+    "description" : "StackHawk REST API"
+  } ],
+  "tags" : [ {
+    "name" : "Organizations",
+    "description" : "Management and resource creation on behalf of an organization"
+  }, {
+    "name" : "Applications",
+    "description" : "Management of StackHawk applications and environments"
+  }, {
+    "name" : "User",
+    "description" : "Information about the authenticated user"
+  }, {
+    "name" : "Api Authentication",
+    "description" : "Authentication and access to the StackHawk API"
+  } ],
+  "paths" : {
+    "/api/v1/org/{orgId}/app" : {
+      "post" : {
+        "tags" : [ "Applications", "Organizations" ],
+        "summary" : "Create application",
+        "description" : "Creates a new application for this organization.",
+        "operationId" : "createApplication",
+        "parameters" : [ {
+          "name" : "orgId",
+          "in" : "path",
+          "description" : "UUID identifier for this StackHawk Organization",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/application.NewApplicationRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "StackHawk Applications will namespace scanResults from HawkScan, and can manage scan settings that can be configured to influence HawkScan behavior.\nFor more information, see [Applications](https://docs.stackhawk.com/web-app/applications.html).",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/application.Application"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/app/{appId}/env/{envId}" : {
+      "post" : {
+        "tags" : [ "Applications" ],
+        "summary" : "Update environment",
+        "description" : "Updates this environment.",
+        "operationId" : "updateEnvironment",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "UUID identifier for this StackHawk Application",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "envId",
+          "in" : "path",
+          "description" : "UUID identifier for this StackHawk Environment",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/application.UpdateApplicationEnvRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "StackHawk Applications will namespace scanResults from HawkScan, and can manage scan settings that can be configured to influence HawkScan behavior.\nFor more information, see [Applications](https://docs.stackhawk.com/web-app/applications.html).",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/application.Application"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Applications" ],
+        "summary" : "Delete environment",
+        "description" : "Deletes this environment.",
+        "operationId" : "deleteEnvironment",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "UUID identifier for this StackHawk Application",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "envId",
+          "in" : "path",
+          "description" : "UUID identifier for this StackHawk Environment",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : { }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/app/{appId}/env" : {
+      "post" : {
+        "tags" : [ "Applications" ],
+        "summary" : "Create environment",
+        "description" : "Creates a new environment under this application.",
+        "operationId" : "createEnvironment",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "UUID identifier for this StackHawk Application",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/application.NewApplicationEnvRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "StackHawk Applications will namespace scanResults from HawkScan, and can manage scan settings that can be configured to influence HawkScan behavior.\nFor more information, see [Applications](https://docs.stackhawk.com/web-app/applications.html).",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/application.Application"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/app/{appId}" : {
+      "get" : {
+        "tags" : [ "Applications" ],
+        "summary" : "Get application",
+        "description" : "Gets this application.",
+        "operationId" : "getApplication",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "UUID identifier for this StackHawk Application",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "StackHawk Applications will namespace scanResults from HawkScan, and can manage scan settings that can be configured to influence HawkScan behavior.\nFor more information, see [Applications](https://docs.stackhawk.com/web-app/applications.html).",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/application.Application"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Applications" ],
+        "summary" : "Update application",
+        "description" : "Updates this application.",
+        "operationId" : "updateApplication",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "UUID identifier for this StackHawk Application",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/application.UpdateApplicationRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "StackHawk Applications will namespace scanResults from HawkScan, and can manage scan settings that can be configured to influence HawkScan behavior.\nFor more information, see [Applications](https://docs.stackhawk.com/web-app/applications.html).",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/application.Application"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Applications" ],
+        "summary" : "Delete application",
+        "description" : "Deletes this application.",
+        "operationId" : "deleteApplication",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "UUID identifier for this StackHawk Application",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : { }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/user" : {
+      "get" : {
+        "tags" : [ "User" ],
+        "summary" : "Get the current user",
+        "description" : "## User Details\n\nThis endpoint provides details about the requesting user. This information helps determine what access an authorized user has on the StackHawk platform, and how they are authenticated.\n\n",
+        "operationId" : "getUser",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/user.UserResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/auth/refresh-token" : {
+      "get" : {
+        "tags" : [ "Api Authentication" ],
+        "summary" : "Refresh existing authentication",
+        "description" : "## Access Refresh\n\nOnce authenticated, an issued API Access Token has a will expire after 30 minutes.\n\nThis authenticated endpoint will \"refresh\" the access token by issuing a new jwt token with an extended expiration.\n\nFor best practices, use the `/refresh` route for refreshing authentication access to extend the API session.\n",
+        "operationId" : "refreshToken",
+        "responses" : {
+          "200" : {
+            "description" : "* A [JSON Web Token](https://jwt.io/) used to authenticate requests to the StackHawk API",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/user.JWT"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/auth/login" : {
+      "get" : {
+        "tags" : [ "Api Authentication" ],
+        "summary" : "Login with API Key",
+        "description" : "## Access Login\n\nUsing a [StackHawk API Key](https://app.stackhawk.com/settings/apikeys), this endpoint returns an *access token* which can then be used in the `authorization` header of subsequent API requests.\nThe access token returned is an [RFC-7519](https://datatracker.ietf.org/doc/html/rfc7519) compliant [jwt access token](https://jwt.io/).\n\nAccess tokens have an expiration of *30 minutes* and are issued on behalf of the requesting user.\n\nAn access token can only be used to interact with StackHawk resources that belong to the user, or to organizations that user is a part of and permissioned for.\n\nFor best practices, use the `/login` route only when starting a new access session to the StackHawk API, and use the `/refresh` route to request a fresh token to extend an API session.\n\n\n",
+        "operationId" : "login",
+        "parameters" : [ {
+          "name" : "X-ApiKey",
+          "in" : "header",
+          "description" : "Specialized request header to supply your **StackHawk API Key** which authorizes further requests.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "* A [JSON Web Token](https://jwt.io/) used to authenticate requests to the StackHawk API",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/user.JWT"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ ]
+      }
+    },
+    "/api/v1/app/{orgId}/list" : {
+      "get" : {
+        "tags" : [ "Applications", "Organizations" ],
+        "summary" : "List applications",
+        "description" : "Lists applications that belong to this organization.",
+        "operationId" : "listApplications",
+        "parameters" : [ {
+          "name" : "orgId",
+          "in" : "path",
+          "description" : "UUID identifier for this StackHawk Organization",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "appIds",
+          "in" : "query",
+          "description" : "A comma-deliminated list of UUID identifiers of StackHawk Applications.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "envs",
+          "in" : "query",
+          "description" : "Names of environments to filter results by",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "ignoreEnvs",
+          "in" : "query",
+          "description" : "If enabled returns a shortened list of applications, omiting environment entries",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        }, {
+          "name" : "pageSize",
+          "in" : "query",
+          "description" : "Pagination response size limit",
+          "required" : false,
+          "schema" : {
+            "type" : "number",
+            "default" : 10
+          }
+        }, {
+          "name" : "pageToken",
+          "in" : "query",
+          "description" : "Pagination request page increment",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : ""
+          }
+        }, {
+          "name" : "sortField",
+          "in" : "query",
+          "description" : "Resource field to sort paginated response by",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "id", "name" ],
+            "default" : "name"
+          }
+        }, {
+          "name" : "sortDir",
+          "in" : "query",
+          "description" : "Paginated results are sorted 'asc' or 'desc'",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "asc", "desc" ],
+            "default" : "asc"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Paginated response of applications.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/application.ListApplicationsResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/app/{appId}/env/list" : {
+      "get" : {
+        "tags" : [ "Applications" ],
+        "summary" : "List environments",
+        "description" : "List environments that belong to this application.",
+        "operationId" : "listEnvironments",
+        "parameters" : [ {
+          "name" : "appId",
+          "in" : "path",
+          "description" : "UUID identifier for this StackHawk Application",
+          "required" : true,
+          "schema" : {
+            "pattern" : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "envs",
+          "in" : "query",
+          "description" : "Names of environments to filter results by",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "name" : "pageSize",
+          "in" : "query",
+          "description" : "Pagination response size limit",
+          "required" : false,
+          "schema" : {
+            "type" : "number",
+            "default" : 10
+          }
+        }, {
+          "name" : "pageToken",
+          "in" : "query",
+          "description" : "Pagination request page increment",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : ""
+          }
+        }, {
+          "name" : "sortField",
+          "in" : "query",
+          "description" : "Resource field to sort paginated response by",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "id", "name" ],
+            "default" : "name"
+          }
+        }, {
+          "name" : "sortDir",
+          "in" : "query",
+          "description" : "Paginated results are sorted 'asc' or 'desc'",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "asc", "desc" ],
+            "default" : "asc"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Paginated response of environments.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/application.ListEnvironmentsResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Unauthorized"
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "application.NewApplicationRequest" : {
+        "type" : "object",
+        "properties" : {
+          "dataType" : {
+            "type" : "string",
+            "description" : "a specified dataType for this new application.",
+            "enum" : [ "NONE", "PII", "PCI", "FIN", "PKI", "HIPAA", "FERPA" ]
+          },
+          "env" : {
+            "type" : "string",
+            "description" : "the initial environment for this new application."
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "the name of this new application."
+          },
+          "organizationId" : {
+            "type" : "string",
+            "description" : "the UUID identifier of the organization that will own this application."
+          },
+          "riskLevel" : {
+            "type" : "string",
+            "description" : "a specified riskLevel for this new application.",
+            "enum" : [ "LOW", "MEDIUM", "HIGH", "CRITICAL" ]
+          }
+        },
+        "description" : "Request to create a new StackHawk Application."
+      },
+      "application.Application" : {
+        "type" : "object",
+        "properties" : {
+          "applicationId" : {
+            "type" : "string",
+            "description" : "the UUID identifier of this application."
+          },
+          "dataType" : {
+            "type" : "string",
+            "description" : "the perceived dataType of this application.",
+            "enum" : [ "NONE", "PII", "PCI", "FIN", "PKI", "HIPAA", "FERPA" ]
+          },
+          "env" : {
+            "type" : "string",
+            "description" : "the name of this environment."
+          },
+          "envId" : {
+            "type" : "string",
+            "description" : "the UUID identifier of this environment."
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "the name of this application."
+          },
+          "riskLevel" : {
+            "type" : "string",
+            "description" : "the perceived riskLevel of this application.",
+            "enum" : [ "LOW", "MEDIUM", "HIGH", "CRITICAL" ]
+          }
+        },
+        "description" : "StackHawk Applications will namespace scanResults from HawkScan, and can manage scan settings that can be configured to influence HawkScan behavior.\nFor more information, see [Applications](https://docs.stackhawk.com/web-app/applications.html)."
+      },
+      "application.UpdateApplicationEnvRequest" : {
+        "type" : "object",
+        "properties" : {
+          "applicationId" : {
+            "type" : "string",
+            "description" : "the UUID identifier of this application."
+          },
+          "dataType" : {
+            "type" : "string",
+            "description" : "updated riskLevel for this environment.",
+            "enum" : [ "NONE", "PII", "PCI", "FIN", "PKI", "HIPAA", "FERPA" ]
+          },
+          "envId" : {
+            "type" : "string",
+            "description" : "the UUID identifier of this environment."
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "updated name for this environment."
+          },
+          "riskLevel" : {
+            "type" : "string",
+            "description" : "updated riskLevel for this environment.",
+            "enum" : [ "LOW", "MEDIUM", "HIGH", "CRITICAL" ]
+          }
+        },
+        "description" : "Request to update an existing StackHawk Environment."
+      },
+      "application.NewApplicationEnvRequest" : {
+        "type" : "object",
+        "properties" : {
+          "applicationId" : {
+            "type" : "string",
+            "description" : "the UUID identifier of this application."
+          },
+          "env" : {
+            "type" : "string",
+            "description" : "the name of this new environment."
+          }
+        },
+        "description" : "Request to create a new StackHawk Environment for an existing application."
+      },
+      "application.UpdateApplicationRequest" : {
+        "type" : "object",
+        "properties" : {
+          "applicationId" : {
+            "type" : "string",
+            "description" : "the UUID identifier of this application."
+          },
+          "dataType" : {
+            "type" : "string",
+            "description" : "updated dataType for this application.",
+            "enum" : [ "NONE", "PII", "PCI", "FIN", "PKI", "HIPAA", "FERPA" ]
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "updated name for this application."
+          },
+          "riskLevel" : {
+            "type" : "string",
+            "description" : "updated riskLevel for this application.",
+            "enum" : [ "LOW", "MEDIUM", "HIGH", "CRITICAL" ]
+          }
+        },
+        "description" : "Request to update an existing StackHawk Application."
+      },
+      "feature.Feature" : {
+        "type" : "object",
+        "properties" : {
+          "enabled" : {
+            "type" : "boolean"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
+      "organization.Organization" : {
+        "type" : "object",
+        "properties" : {
+          "features" : {
+            "type" : "array",
+            "description" : "override to the feature flags in the plan",
+            "items" : {
+              "$ref" : "#/components/schemas/feature.Feature"
+            }
+          },
+          "id" : {
+            "type" : "string"
+          },
+          "isLinkedToExternalBilling" : {
+            "type" : "boolean"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "plan" : {
+            "type" : "string"
+          },
+          "subscription" : {
+            "$ref" : "#/components/schemas/organization.Subscription"
+          }
+        }
+      },
+      "organization.Subscription" : {
+        "type" : "object",
+        "properties" : {
+          "appCount" : {
+            "type" : "integer",
+            "description" : "Soft application limit for this organization",
+            "format" : "int64"
+          },
+          "customerId" : {
+            "type" : "string",
+            "description" : "CustomerId from billing provider"
+          },
+          "endDate" : {
+            "type" : "integer",
+            "description" : "End Date of this subscription, in seconds from epoch",
+            "format" : "int64"
+          },
+          "isEnabled" : {
+            "type" : "boolean",
+            "description" : "If external billing is enabled"
+          },
+          "productName" : {
+            "type" : "string",
+            "description" : "The name of the purchased product subscription"
+          },
+          "quantity" : {
+            "type" : "integer",
+            "description" : "The quantity of units in this subscription",
+            "format" : "int64"
+          },
+          "recurringInterval" : {
+            "type" : "string",
+            "description" : "The billing recurring interval for this subscription",
+            "enum" : [ "RECURRING_INTERVAL_UNKNOWN", "MONTH", "YEAR" ]
+          },
+          "recurringIntervalCount" : {
+            "type" : "integer",
+            "description" : "How often in the recurring interval billing occurs",
+            "format" : "int64"
+          },
+          "stackhawkOrgId" : {
+            "type" : "string",
+            "description" : "The organization UUID for this subscription"
+          },
+          "startDate" : {
+            "type" : "integer",
+            "description" : "Start Date of this subscription, in seconds from epoch",
+            "format" : "int64"
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "The status of the organization subscription",
+            "enum" : [ "SUBSCRIPTION_UNKNOWN", "TRIALING", "ACTIVE", "INCOMPLETE", "CANCELLED", "FREE" ]
+          },
+          "subscriptionId" : {
+            "type" : "string",
+            "description" : "SubscriptionId from billing provider"
+          },
+          "unitAmount" : {
+            "type" : "integer",
+            "description" : "The number of units with this subscription",
+            "format" : "int64"
+          },
+          "userCount" : {
+            "type" : "integer",
+            "description" : "Soft user limit for this organization",
+            "format" : "int64"
+          }
+        },
+        "description" : "Properties of the external billing subscription for entitled access to the StackHawk platform"
+      },
+      "user.ProviderInfo" : {
+        "type" : "object",
+        "properties" : {
+          "clientId" : {
+            "type" : "string"
+          },
+          "created" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "slug" : {
+            "type" : "string",
+            "enum" : [ "GITHUB", "GOOGLE", "STACKHAWK", "SAMLIDP" ]
+          }
+        },
+        "description" : "Information about a users access Provider to the StackHawk platform"
+      },
+      "user.User" : {
+        "type" : "object",
+        "properties" : {
+          "external" : {
+            "$ref" : "#/components/schemas/user.UserExternal"
+          },
+          "organizationIds" : {
+            "type" : "array",
+            "properties" : {
+              "empty" : {
+                "type" : "boolean"
+              }
+            },
+            "description" : "**Deprecated**",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "provider" : {
+            "$ref" : "#/components/schemas/user.ProviderInfo"
+          },
+          "stackhawkId" : {
+            "type" : "string",
+            "description" : "internal identifier for this user. _this is not the user uuid_"
+          }
+        },
+        "description" : "Represents a StackHawk User"
+      },
+      "user.UserExternal" : {
+        "type" : "object",
+        "properties" : {
+          "applicationIds" : {
+            "type" : "array",
+            "properties" : {
+              "empty" : {
+                "type" : "boolean"
+              }
+            },
+            "description" : "array of application ids this user has access to",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "avatarUrl" : {
+            "type" : "string",
+            "description" : "users avatar url"
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "users email address"
+          },
+          "firstName" : {
+            "type" : "string",
+            "description" : "users first name"
+          },
+          "fullName" : {
+            "type" : "string",
+            "description" : "users full name"
+          },
+          "id" : {
+            "type" : "string",
+            "description" : "the UUID identifier of this user"
+          },
+          "lastName" : {
+            "type" : "string",
+            "description" : "users last name"
+          },
+          "organizations" : {
+            "type" : "array",
+            "description" : "organizations a user is a part of",
+            "items" : {
+              "$ref" : "#/components/schemas/user.UserOrganization"
+            }
+          },
+          "preferences" : {
+            "$ref" : "#/components/schemas/user.UserPreferences"
+          }
+        },
+        "description" : "Information about the User and how they can access the platform"
+      },
+      "user.UserOrganization" : {
+        "type" : "object",
+        "properties" : {
+          "features" : {
+            "type" : "array",
+            "description" : "Specific features available to this organization",
+            "items" : {
+              "$ref" : "#/components/schemas/feature.Feature"
+            }
+          },
+          "organization" : {
+            "$ref" : "#/components/schemas/organization.Organization"
+          },
+          "role" : {
+            "type" : "string",
+            "description" : "The organization role the user belongs to within this organization",
+            "enum" : [ "UNKNOWN", "OWNER", "ADMIN" ]
+          }
+        },
+        "description" : "Represents the relationship between a User and an Organization they belong to."
+      },
+      "user.UserPreferences" : {
+        "type" : "object",
+        "properties" : {
+          "defaultOrganizationId" : {
+            "type" : "string",
+            "description" : "the UUID identifier of the organization a user currently belongs to"
+          },
+          "dontReceiveUpdatesEmail" : {
+            "type" : "boolean",
+            "description" : "if `true`, the user will be opted out of Company Update emails"
+          },
+          "dontReceiveWeeklyEmail" : {
+            "type" : "boolean",
+            "description" : "if `true`, the user will be opted out of weekly organization update emails"
+          }
+        },
+        "description" : "User settings and preferences for interaction within StackHawk"
+      },
+      "user.UserResponse" : {
+        "type" : "object",
+        "properties" : {
+          "unclaimedInviteOrganizationIds" : {
+            "type" : "array",
+            "properties" : {
+              "empty" : {
+                "type" : "boolean"
+              }
+            },
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/user.User"
+          }
+        }
+      },
+      "user.JWT" : {
+        "type" : "object",
+        "properties" : {
+          "token" : {
+            "type" : "string",
+            "description" : "the bearer token value"
+          }
+        },
+        "description" : "* A [JSON Web Token](https://jwt.io/) used to authenticate requests to the StackHawk API"
+      },
+      "application.ListApplicationsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "applications" : {
+            "type" : "array",
+            "description" : "found list of applications.",
+            "items" : {
+              "$ref" : "#/components/schemas/application.Application"
+            }
+          },
+          "nextPageToken" : {
+            "type" : "string",
+            "description" : "pageToken to provide for the next page of results."
+          },
+          "totalCount" : {
+            "type" : "integer",
+            "description" : "total number of results.",
+            "format" : "int64"
+          }
+        },
+        "description" : "Paginated response of applications."
+      },
+      "application.AlertStatusStats" : {
+        "type" : "object",
+        "properties" : {
+          "alertStatus" : {
+            "type" : "string",
+            "enum" : [ "UNKNOWN", "FALSE_POSITIVE", "RISK_ACCEPTED", "PROMOTED" ]
+          },
+          "severityStats" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "format" : "int32"
+            },
+            "deprecated" : true
+          },
+          "totalCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "application.Environment" : {
+        "type" : "object",
+        "properties" : {
+          "currentScanSummary" : {
+            "$ref" : "#/components/schemas/application.ScanSummary"
+          },
+          "environmentId" : {
+            "type" : "string",
+            "description" : "the UUID identifier of this environment."
+          },
+          "environmentName" : {
+            "type" : "string",
+            "description" : "the name of this environment."
+          },
+          "scanSummaries" : {
+            "type" : "array",
+            "description" : "summaries of recent scans from this environment.",
+            "items" : {
+              "$ref" : "#/components/schemas/application.ScanSummary"
+            }
+          }
+        },
+        "description" : "A decorated application's environment with details of recent scan stats included."
+      },
+      "application.ListEnvironmentsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "environments" : {
+            "type" : "array",
+            "description" : "found list of environments.",
+            "items" : {
+              "$ref" : "#/components/schemas/application.Environment"
+            }
+          },
+          "nextPageToken" : {
+            "type" : "string",
+            "description" : "pageToken to provide for the next page of results."
+          },
+          "totalCount" : {
+            "type" : "integer",
+            "description" : "total number of results.",
+            "format" : "int64"
+          }
+        },
+        "description" : "Paginated response of environments."
+      },
+      "application.ScanAlertStats" : {
+        "type" : "object",
+        "properties" : {
+          "alertStatusStats" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/application.AlertStatusStats"
+            }
+          },
+          "totalAlerts" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "uniqueAlerts" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "application.ScanSummary" : {
+        "type" : "object",
+        "properties" : {
+          "alertStats" : {
+            "$ref" : "#/components/schemas/application.ScanAlertStats"
+          },
+          "configHash" : {
+            "type" : "string",
+            "description" : "hash of the HawkScan configuration used for this scan."
+          },
+          "scanId" : {
+            "type" : "string",
+            "description" : "the UUID identifier of this scan."
+          },
+          "timestamp" : {
+            "type" : "integer",
+            "description" : "secondsSinceEpoch timestamp of when the scan was run.",
+            "format" : "int64"
+          },
+          "version" : {
+            "type" : "string",
+            "description" : "the version of HawkScan used for this scan."
+          }
+        },
+        "description" : "A summary of findings from a scanResult."
+      }
+    },
+    "securitySchemes" : {
+      "BearerAuth" : {
+        "type" : "http",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      }
+    }
+  }
+}

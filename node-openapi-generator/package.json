@@ -1,0 +1,46 @@
+{
+  "name": "stack_hawk_public_api",
+  "version": "0.0.1",
+  "description": "_STACKHAWK_https__images_ctfassets_net_nx13ojx82pll_1zPawvEGOq9zKX8PuVw0kB_e4a31b30fdb07b7e424277d7824d2ffe_stackhawk_long_png_StackHawk_APIThis_is_the_OpenAPI_specification_for_the__StackHawk_https__www_stackhawk_com_REST_API_affectionately_known_as__Falcon___KaakawwStackHawk_is_an_application_security_testing_tool_built_for_developers__With_powerful_automation_and_integration_capabilities_StackHawk_gives_engineers_the_ability_to_find_and_fix_security_vulnerabilities_on_every_merge__Getting_StartedTo_make_requests_to_the_StackHawk_API_you_will_first_need_an_API_Key_from_the_StackHawk_platform__That_will_be_used_to_request_an_access_token_which_is_used_to_authorize_requests_made_to_the_StackHawk_API_Use_of_the_StackHawk_API_will_require_a__StackHawk_account_https__auth_stackhawk_com_and_an_organization_with_sufficient_permissions_From_the_StackHawk_platform_under__Settings__API_Keys_https__app_stackhawk_com_settings_apikeys_create_a_new_API_Key__These_secrets_are_long_lived_so_store_this_value_in_a_secure_fashion__AuthorizationRequests_made_to_the_StackHawk_API_server_are_authorized_following_the__OAuth2_0_protocol_https__oauth_net_2_To_get_an_access_token_make_a_request_to_GET__api_v1_auth_login_and_provide_the_user_apikey_through_the_X_ApiKey_request_header__This_route_will_then_return_an_access_token_that_can_authenticate_further_API_requests_This_token_can_then_be_used_to_authenticate_subsequent_requests_using_the_authorization_Bearer_header_For_more_information_see_the_Api_Authentication_section__Rate_LimitingApi_calls_are_ratelimited_with_at_most_180_requests_per_minute__StackHawk_Api_Standards_Client_ErrorsAPI_Calls_that_fail_due_to_client_input_will_return_4xx_status_code__401_UnauthorizedThe_server_doesnt_think_you_should_be_making_this_request_This_error_is_intentionally_vague_for_security_purposes_but_any_of_the_following_could_cause_it__no_authorization_was_provided__authorization_has_expired__authorization_is_insufficient_for_the_requested_resource_404_Not_FoundThe_route_or_resource_does_not_exist__400_Bad_RequestThe_server_could_not_process_this_request_although_it_may_have_tried_The_JSON_reponse_body_message_will_include_details_on_what_input_was_invalid__Pagination_and_SortingListing_API_routes_will_return_resources_in_a_paginated_fashion_Paginated_requests_follow_a_pattern_of_taking_the_following_optional_path_parameters_pageToken_a_string_incrementing_count_of_pages_in_the_pagination_starting_from_0_pageSize_the_number_of_elements_to_request_in_the_page_defaults_to_10_sortField_sorts_the_listed_resource_by_an_approved_field_defaults_to_sorting_by_resource_name_sortDir_either_asc_or_desc_defaults_ascendingThe_responseBody_of_these_API_routes_will_additionally_include_two_fields_nextPageToken_a_string_indicating_the_next_pageToken_to_pass_in_for_the_next_page_of_results_with_this_request_totalCount_the_total_number_of_resources_the_query_can_paginate_through_Questions_Comments_Concerns_Kaa_KawwWe_are_always_making_advancements_and_improvements_to_our_Platform_Scanner_and_the_StackHawk_API_If_you_encounter_an_issue_you_cannot_solve_with_this_documentation_please_reach_out_to__supportstackhawk_com_mailtosupportstackhawk_com_with_your_questions_and_well_help_you_troubleshoot_any_issues_and_get_you_soaring_with_StackHawk_",
+  "license": "private",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "babel src -d dist",
+    "prepare": "npm run build",
+    "test": "mocha --require @babel/register --recursive"
+  },
+  "browser": {
+    "fs": false
+  },
+  "dependencies": {
+    "@babel/cli": "^7.0.0",
+    "superagent": "^5.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.0.0",
+    "@babel/plugin-proposal-class-properties": "^7.0.0",
+    "@babel/plugin-proposal-decorators": "^7.0.0",
+    "@babel/plugin-proposal-do-expressions": "^7.0.0",
+    "@babel/plugin-proposal-export-default-from": "^7.0.0",
+    "@babel/plugin-proposal-export-namespace-from": "^7.0.0",
+    "@babel/plugin-proposal-function-bind": "^7.0.0",
+    "@babel/plugin-proposal-function-sent": "^7.0.0",
+    "@babel/plugin-proposal-json-strings": "^7.0.0",
+    "@babel/plugin-proposal-logical-assignment-operators": "^7.0.0",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.0.0",
+    "@babel/plugin-proposal-numeric-separator": "^7.0.0",
+    "@babel/plugin-proposal-optional-chaining": "^7.0.0",
+    "@babel/plugin-proposal-pipeline-operator": "^7.0.0",
+    "@babel/plugin-proposal-throw-expressions": "^7.0.0",
+    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
+    "@babel/plugin-syntax-import-meta": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
+    "@babel/register": "^7.0.0",
+    "expect.js": "^0.3.1",
+    "mocha": "^8.0.1",
+    "sinon": "^7.2.0"
+  },
+  "files": [
+    "dist"
+  ]
+}
