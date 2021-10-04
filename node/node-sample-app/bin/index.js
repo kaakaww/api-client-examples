@@ -4,7 +4,7 @@ console.log( "Hello!" );
 
 let authApi = new ApiAuthenticationApi();
 
-authApi.login("hawk.fXMf18t6EqGYAuI7uncR.Rf5TNCxNqFJ7XjDg2U3F", (error, data, response) => {
+authApi.login("YOUR API KEY", (error, data, response) => {
     if (error) {
         console.log("Error getting Token : " + error);
     } else {
