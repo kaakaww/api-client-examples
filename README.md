@@ -11,12 +11,12 @@ We have provided a sample of some here to help folks get started.
 
 ### Via the openapi-generator command line tool
 
-- Node app
+- [Node app](/node/)
 
 ### Via OpenAPI build plugins
 
-- Java app + Maven OpenAPI Generator Plugin
-- Kotlin app + Gradle OpenAPI Generator Plugin
+- [Java app + Maven OpenAPI Generator Plugin](/java-openapi-generator/)
+- [Kotlin app + Gradle OpenAPI Generator Plugin](/kotlin-openapi-generator/)
 
 ## Other
 
