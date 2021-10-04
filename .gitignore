@@ -33,8 +33,11 @@ build/
 # OS X
 .DS_Store
 
-### node ###
+# node
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 node_modules/
+
+# IntelliJ
+.idea
