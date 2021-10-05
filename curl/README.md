@@ -4,7 +4,7 @@ Example bash scripts for interaction with the [StackHawk Public API](https://api
 
 ## Usage
 
-Usage: specify your `SH_API_KEY` with your [StackHawk API Key](https://app.stackhawk.com/settings/apikeys) and the `SH_ORG_ID` with the StackHawk organization UUID you want the api scripts to interact with.
+Usage: specify your `SH_API_KEY` with your [StackHawk API Key](https://app.stackhawk.com/settings/apikeys) and the `SH_ORG_ID` with the StackHawk organization UUID you want the api scripts to interact with. Defaults to the users first found organization.
 
 ## Scripts
 

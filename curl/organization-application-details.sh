@@ -22,12 +22,6 @@ echo "\$SH_API_KEY is not yet set"
 exit 1
 fi
 
-if [ -z "$SH_ORG_ID" ]
-then
-echo "\$SH_ORG_ID is not yet set"
-exit 1
-fi
-
 echo "This will list out the application names and ids that belong to the $SH_ORG_ID organization"
 echo "press any key to continue..."
 read -r
@@ -45,7 +39,18 @@ else
 echo "$token"
 fi
 
-appNames=$( listOrgAppDetails $token $SH_ORG_ID )
+if [ -z "$SH_ORG_ID" ]
+then
+orgId=$(curl --request GET \
+    --url https://api.stackhawk.com/api/v1/user \
+    --header 'Accept: application/json' \
+    --header "Authorization: Bearer $token" \
+    | jq -r '.user.external.organizations[0].organization.id')
+else
+orgId="$SH_ORG_ID"
+fi
+
+appNames=$( listOrgAppDetails $token $orgId )
 
 for appName in $appNames
 do
