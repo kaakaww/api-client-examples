@@ -20,4 +20,4 @@ We have provided some samples here to help folks get started.
 
 ## Other
 
-- shell script using `curl` & `jq`
+- `curl` example custom StackHawk API shell scripts

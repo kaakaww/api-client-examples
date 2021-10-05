@@ -4,6 +4,7 @@
 #   Usage: copy and modify this script to suit your needs. Change the appNames and envNames to match your needs
 #   define a $SH_API_KEY with a API Key from StackHawk https://app.stackhawk.com/settings/apikeys
 #   see https://docs.stackhawk.com/apidocs.html for more details
+
 APP_NAMES=("\U0001F34B-LEMON" "\U0001F352-CHERRY" "\U0001F34F-APPLE" "\U0001FAD0-BERRY" "\U0001F965-COCONUT")
 ENV_NAMES=("dev" "test" "prod")
 
