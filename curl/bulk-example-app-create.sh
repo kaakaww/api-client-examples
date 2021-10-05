@@ -5,13 +5,13 @@
 #   define a $SH_API_KEY with a API Key from StackHawk https://app.stackhawk.com/settings/apikeys
 #   see https://docs.stackhawk.com/apidocs.html for more details
 
-APP_NAMES=("\U0001F34B-LEMON" "\U0001F352-CHERRY" "\U0001F34F-APPLE" "\U0001FAD0-BERRY" "\U0001F965-COCONUT")
+APP_NAMES=("LEMON" "CHERRY" "APPLE" "BERRY" "COCONUT")
 ENV_NAMES=("dev" "test" "prod")
 
 function createApp {
     token="$1"
     orgId="$2"
-    appName=$(printf '%s' "$3")
+    appName="$3"
     envName="$4"
 
     appId=$(curl --request POST \
@@ -61,33 +61,39 @@ echo "\$SH_API_KEY is not yet set"
 exit 1
 fi
 
-token=$(curl --request GET \
+if [ -z "$SH_ORG_ID" ]
+then
+echo "\$SH_ORG_ID is not yet set"
+exit 1
+fi
+
+echo "This will generate ${#APP_NAMES[@]} applications with ${#ENV_NAMES[@]} environments each in the $SH_ORG_ID organization"
+echo "press any key to continue..."
+read -r
+
+token=$(curl -f --request GET \
     --url https://api.stackhawk.com/api/v1/auth/login \
     --header 'Accept: application/json' \
     --header "X-ApiKey: $SH_API_KEY" \
     | jq -r '.token')
+if [ -z "$token" ]
+then
+echo "API Token could not be requested"
+exit 1
+else
 echo "$token"
-
-orgId=$(curl --request GET \
-    --url https://api.stackhawk.com/api/v1/user \
-    --header 'Accept: application/json' \
-    --header "Authorization: Bearer $token" \
-    | jq -r '.user.external.organizations[0].organization.id')
-
-echo "This will generate ${#APP_NAMES[@]} applications with ${#ENV_NAMES[@]} environments each in the $orgId organization"
-echo "press any key to continue..."
-read -r
+fi
 
 for a in "${!APP_NAMES[@]}"; do
     appName=${APP_NAMES[$a]}
     appId=""
     for e in "${!ENV_NAMES[@]}"; do
         envName=${ENV_NAMES[$e]}
-        if [[ $envName == 'dev' ]]; then
-            appId=$(createApp "$token" "$orgId" "$appName" "$envName")
+        if [[ $envName == "${ENV_NAMES[0]}" ]]; then
+            appId=$(createApp "$token" "$SH_ORG_ID" "$appName" "$envName")
             echo -e "created app $appId - $appName $envName"
         else
-            envId=$(createAppEnv "$token" "$orgId" "$appId" "$envName")
+            envId=$(createAppEnv "$token" "$SH_ORG_ID" "$appId" "$envName")
             echo -e "created env $envId - $appName $envName"
         fi
     done

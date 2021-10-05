@@ -32,12 +32,18 @@ echo "This will list out the application names and ids that belong to the $SH_OR
 echo "press any key to continue..."
 read -r
 
-token=$(curl --request GET \
+token=$(curl -f --request GET \
     --url https://api.stackhawk.com/api/v1/auth/login \
     --header 'Accept: application/json' \
     --header "X-ApiKey: $SH_API_KEY" \
     | jq -r '.token')
+if [ -z "$token" ]
+then
+echo "API Token could not be requested"
+exit 1
+else
 echo "$token"
+fi
 
 appNames=$( listOrgAppDetails $token $SH_ORG_ID )
 

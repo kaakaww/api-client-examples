@@ -8,9 +8,9 @@ Usage: specify your `SH_API_KEY` with your [StackHawk API Key](https://app.stack
 
 ## Scripts
 
-`stackhawk-user-details.sh` - formatted details about the authorized stackhawk user, including organization ids
-`bulk-example-app-create.sh` - script to bulk create stackhawk applications striped with envs
-`organization-application-details.sh` - details about the applications in the specified organization
+* `stackhawk-user-details.sh` - formatted details about the authorized stackhawk user, including organization ids
+* `bulk-example-app-create.sh` - script to bulk create stackhawk applications striped with envs
+* `organization-application-details.sh` - details about the applications in the specified organization
 
 ## Details
 
