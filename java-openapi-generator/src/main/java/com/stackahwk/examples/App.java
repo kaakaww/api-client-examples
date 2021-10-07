@@ -14,21 +14,22 @@ public class App
 {
     public static void main( String[] args ) throws Exception
     {
-        System.out.println( "Hello World! " + args[0]);
+        System.out.println( "KaaKaww!" );
         ApiClient apiAuthClient = new ApiClient();
 
         ApiAuthenticationApi authApi = new ApiAuthenticationApi( apiAuthClient );
         UserJWT token = authApi.login( args[0] );
-        System.out.println( "Jwt Token: " + token.getToken() );
+        System.out.println( "JWT : " + token.getToken() );
 
         ApiClient apiClient = new ApiClient();
         apiClient.setBearerToken(token.getToken());
 
         UserApi userApi = new UserApi( apiClient );
         UserUserResponse userResponse = userApi.getUser();
+        System.out.println( "User ID: " + userResponse.getUser().getExternal().getId() );
 
-        System.out.println( "User " + userResponse.getUser() );
         String orgId = userResponse.getUser().getExternal().getOrganizations().get(0).getOrganization().getId();
+        System.out.println( "Organization ID: " + orgId);
 
         ApplicationNewApplicationRequest newAppReq = new ApplicationNewApplicationRequest();
         newAppReq.setName( "New Application" );
@@ -43,12 +44,12 @@ public class App
                 newAppReq
         );
 
-        System.out.println( "New Application " + app.getApplicationId() );
+        System.out.println( "New Application ID: " + app.getApplicationId() );
+
+        apiClient.getHttpClient().dispatcher().executorService().shutdownNow();
+        apiAuthClient.getHttpClient().dispatcher().executorService().shutdownNow();
 
         apiClient.getHttpClient().connectionPool().evictAll();
-        apiClient.getHttpClient().dispatcher().executorService().shutdown();
-
         apiAuthClient.getHttpClient().connectionPool().evictAll();
-        apiAuthClient.getHttpClient().dispatcher().executorService().shutdown();
     }
 }

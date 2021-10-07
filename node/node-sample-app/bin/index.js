@@ -10,7 +10,7 @@ authApi.login(apiKey, (error, data, response) => {
     if (error) {
         console.log("Error getting Token : " + error);
     } else {
-        console.log("Token : " + data.token);
+        console.log("JWT : " + data.token);
 
         let BearerAuth = ApiClient.instance.authentications['BearerAuth'];
         BearerAuth.accessToken = data.token
@@ -18,8 +18,9 @@ authApi.login(apiKey, (error, data, response) => {
         let userApi = new UserApi();
 
         userApi.getUser((error, data, response) => {
+            console.log("User ID: " + data.user.external.id)
             let orgId = data.user.external.organizations[0].organization.id
-            console.log("Org ID " + orgId)
+            console.log("Organization ID " + orgId)
 
             let req = new ApplicationNewApplicationRequest();
             req.name = "New App";
@@ -33,7 +34,7 @@ authApi.login(apiKey, (error, data, response) => {
                 if (error) {
                     console.log("Error creating app : " + error);
                 } else {
-                    console.log("New app id " + data.applicationId);
+                    console.log("New Application ID: " + data.applicationId);
                 }
             })
         })
