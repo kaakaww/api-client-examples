@@ -34,7 +34,7 @@ openApiGenerate {
 tasks {
     val openApiGenerate by getting
 
-    val compileJava by getting {
+    val compileKotlin by getting {
         dependsOn(openApiGenerate)
     }
 }
@@ -59,14 +59,22 @@ dependencies {
     implementation("io.ktor:ktor-client-logging:$ktorVersion")
 
     implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
+
+    runtimeOnly("org.jetbrains.kotlin:kotlin-reflect:1.5.31")
 }
 
 tasks.test {
     useJUnitPlatform()
 }
 
+val jvmTarget = "1.8"
+
 tasks.withType<KotlinCompile>() {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = jvmTarget
+}
+
+tasks.withType<JavaCompile>() {
+    targetCompatibility = jvmTarget
 }
 
 application {
