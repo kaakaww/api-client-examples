@@ -6,5 +6,5 @@ StackHawk API.
 ## To Run:
 
 ```shell
-> mvn -e clean generate-sources compile exec:java  -Dexec.args="
+> mvn -e clean generate-sources compile exec:java  -Dexec.args="YOUR API KEY HERE"
 ```
