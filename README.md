@@ -1,6 +1,6 @@
 # StackHawk API Client Samples
 
-A collection of API Client implementations for interacting with the StackHawk API.
+A collection of sample API Client implementations for interacting with the StackHawk API.
 
 ## OpenAPI Generated
 
@@ -21,3 +21,4 @@ We have provided some samples here to help folks get started.
 ## Other
 
 - `curl` example custom StackHawk API shell scripts
+ 
