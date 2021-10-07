@@ -2,7 +2,7 @@ const { ApiAuthenticationApi, UserApi, ApiClient, ApplicationsApi, ApplicationNe
 
 let apiKey = process.argv[2];
 
-console.log( "Hello!" );
+console.log( "KaaKaww!" );
 
 let authApi = new ApiAuthenticationApi();
 
