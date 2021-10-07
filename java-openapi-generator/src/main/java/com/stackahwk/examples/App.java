@@ -14,11 +14,11 @@ public class App
 {
     public static void main( String[] args ) throws Exception
     {
+        System.out.println( "Hello World! " + args[0]);
         ApiClient apiAuthClient = new ApiClient();
 
         ApiAuthenticationApi authApi = new ApiAuthenticationApi( apiAuthClient );
         UserJWT token = authApi.login( args[0] );
-        System.out.println( "Hello World!" );
         System.out.println( "Jwt Token: " + token.getToken() );
 
         ApiClient apiClient = new ApiClient();
@@ -28,16 +28,18 @@ public class App
         UserUserResponse userResponse = userApi.getUser();
 
         System.out.println( "User " + userResponse.getUser() );
+        String orgId = userResponse.getUser().getExternal().getOrganizations().get(0).getOrganization().getId();
 
         ApplicationNewApplicationRequest newAppReq = new ApplicationNewApplicationRequest();
         newAppReq.setName( "New Application" );
         newAppReq.setEnv( "New Env" );
         newAppReq.setDataType( ApplicationNewApplicationRequest.DataTypeEnum.FIN );
         newAppReq.setRiskLevel( ApplicationNewApplicationRequest.RiskLevelEnum.CRITICAL );
+        newAppReq.setOrganizationId(orgId);
 
         ApplicationsApi applicationsApi = new ApplicationsApi( apiClient );
         ApplicationApplication app = applicationsApi.createApplication(
-                UUID.fromString( userResponse.getUser().getExternal().getOrganizations().get(0).getOrganization().getId() ),
+                UUID.fromString( orgId ),
                 newAppReq
         );
 
