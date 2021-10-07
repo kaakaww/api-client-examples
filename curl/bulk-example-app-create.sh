@@ -62,21 +62,6 @@ echo "\$SH_API_KEY is not yet set"
 exit 1
 fi
 
-echo "This will generate ${#APP_NAMES[@]} applications with ${#ENV_NAMES[@]} environments each in the $SH_ORG_ID organization"
-echo "press any key to continue..."
-read -r
-
-if [ -z "$SH_ORG_ID" ]
-then
-orgId=$(curl --request GET \
-    --url https://api.stackhawk.com/api/v1/user \
-    --header 'Accept: application/json' \
-    --header "Authorization: Bearer $token" \
-    | jq -r '.user.external.organizations[0].organization.id')
-else
-orgId="$SH_ORG_ID"
-fi
-
 token=$(curl -f --request GET \
     --url https://api.stackhawk.com/api/v1/auth/login \
     --header 'Accept: application/json' \
@@ -89,6 +74,21 @@ exit 1
 else
 echo "$token"
 fi
+
+if [ -z "$SH_ORG_ID" ]
+then
+orgId=$(curl --request GET \
+    --url https://api.stackhawk.com/api/v1/user \
+    --header 'Accept: application/json' \
+    --header "Authorization: Bearer $token" \
+    | jq -r '.user.external.organizations[0].organization.id')
+else
+orgId="$SH_ORG_ID"
+fi
+
+echo "This will generate ${#APP_NAMES[@]} applications with ${#ENV_NAMES[@]} environments each in the $SH_ORG_ID organization"
+echo "press any key to continue..."
+read -r
 
 for a in "${!APP_NAMES[@]}"; do
     appName=${APP_NAMES[$a]}

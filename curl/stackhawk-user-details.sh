@@ -36,10 +36,10 @@ else
 echo "$token"
 fi
 
-userDetails=$( getUserDetails $token )
-provider=$(echo $userDetails | jq -r '.user.provider.slug' )
-fullName=$(echo $userDetails | jq -r '.user.external.fullName' )
-email=$(echo $userDetails | jq -r '.user.external.email' )
+userDetails=$( getUserDetails "$token" )
+provider=$(echo "$userDetails" | jq -r '.user.provider.slug' )
+fullName=$(echo "$userDetails" | jq -r '.user.external.fullName' )
+email=$(echo "$userDetails" | jq -r '.user.external.email' )
 echo "$fullName ($email) - login: $provider"
 echo " Org Id                                 Role    Org Name"
-echo $userDetails | jq -r '.user.external.organizations[] | [.organization.id, .role, .organization.name] | @csv'
+echo "$userDetails" | jq -r '.user.external.organizations[] | [.organization.id, .role, .organization.name] | @csv'

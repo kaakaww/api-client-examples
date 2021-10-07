@@ -50,7 +50,7 @@ else
 orgId="$SH_ORG_ID"
 fi
 
-appNames=$( listOrgAppDetails $token $orgId )
+appNames=$( listOrgAppDetails "$token" "$orgId" )
 
 for appName in $appNames
 do
