@@ -1,10 +1,12 @@
 const { ApiAuthenticationApi, UserApi, ApiClient, ApplicationsApi, ApplicationNewApplicationRequest} = require("stack_hawk_public_api");
 
+let apiKey = process.argv[2];
+
 console.log( "Hello!" );
 
 let authApi = new ApiAuthenticationApi();
 
-authApi.login("YOUR API KEY", (error, data, response) => {
+authApi.login(apiKey, (error, data, response) => {
     if (error) {
         console.log("Error getting Token : " + error);
     } else {
@@ -24,6 +26,7 @@ authApi.login("YOUR API KEY", (error, data, response) => {
             req.dataType = "FIN";
             req.env = "New Env";
             req.riskLevel = "CRITICAL";
+            req.organizationId = orgId;
 
             let appApi = new ApplicationsApi();
             appApi.createApplication(orgId, req, (error, data, response) => {
