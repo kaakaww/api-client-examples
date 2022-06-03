@@ -23,7 +23,7 @@
     <maven-plugin-version>1.0.0</maven-plugin-version>
     <junit-version>4.8.1</junit-version>
     <scribejava-apis-version>6.9.0</scribejava-apis-version>
-    <jodatime-version>2.7</jodatime-version>
+    <jodatime-version>2.10.14</jodatime-version>
   </properties>
 
   <dependencies>
